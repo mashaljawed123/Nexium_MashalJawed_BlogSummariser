@@ -39,6 +39,7 @@ function translateToUrdu(text) {
 }
 
 export default function Home() {
+  const [hasMounted, setHasMounted] = useState(false)
   const [url, setUrl] = useState('')
   const [summary, setSummary] = useState('')
   const [urduSummary, setUrduSummary] = useState('')
@@ -46,6 +47,19 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showToast, setShowToast] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (showToast) {
+      toast.success('Summary generated and saved!')
+      setShowToast(false)
+    }
+  }, [showToast])
+
+  if (!hasMounted) return null
 
   const simulateFetch = async () => {
     setLoading(true)
@@ -85,7 +99,7 @@ export default function Home() {
 
       if (!saveRes.ok) throw new Error('Failed to save')
 
-      setShowToast(true) // defer toast trigger
+      setShowToast(true)
     } catch (err) {
       console.error(err)
       setError('Failed to fetch and summarise blog.')
@@ -93,14 +107,6 @@ export default function Home() {
 
     setLoading(false)
   }
-
-  // ✅ Trigger toast client-side only
-  useEffect(() => {
-    if (showToast) {
-      toast.success('Summary generated and saved!')
-      setShowToast(false)
-    }
-  }, [showToast])
 
   return (
     <TooltipProvider>
