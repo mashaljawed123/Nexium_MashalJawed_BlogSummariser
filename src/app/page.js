@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -45,6 +45,7 @@ export default function Home() {
   const [fullText, setFullText] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showToast, setShowToast] = useState(false)
 
   const simulateFetch = async () => {
     setLoading(true)
@@ -52,6 +53,7 @@ export default function Home() {
     setSummary('')
     setUrduSummary('')
     setFullText('')
+    setShowToast(false)
 
     try {
       const res = await fetch('/api/scrape', {
@@ -70,7 +72,6 @@ export default function Home() {
       setUrduSummary(urdu)
       setFullText(scrapedText)
 
-      // Save to Supabase + MongoDB
       const saveRes = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +85,7 @@ export default function Home() {
 
       if (!saveRes.ok) throw new Error('Failed to save')
 
-      toast.success('Summary generated and saved!')
+      setShowToast(true) // defer toast trigger
     } catch (err) {
       console.error(err)
       setError('Failed to fetch and summarise blog.')
@@ -92,6 +93,14 @@ export default function Home() {
 
     setLoading(false)
   }
+
+  // ✅ Trigger toast client-side only
+  useEffect(() => {
+    if (showToast) {
+      toast.success('Summary generated and saved!')
+      setShowToast(false)
+    }
+  }, [showToast])
 
   return (
     <TooltipProvider>
